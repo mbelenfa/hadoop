@@ -1079,6 +1079,23 @@ public class DFSConfigKeys extends CommonConfigurationKeys {
       "httpfs.buffer.size";
   public static final int HTTP_BUFFER_SIZE_DEFAULT = 4096;
 
+  // HDFS federation
+  public static final String FEDERATION_PREFIX = "dfs.federation.";
+
+  // HDFS Router-based federation
+  public static final String FEDERATION_ROUTER_PREFIX =
+      "dfs.federation.router.";
+
+  // HDFS Router State Store connection
+  public static final String FEDERATION_FILE_RESOLVER_CLIENT_CLASS =
+      FEDERATION_ROUTER_PREFIX + "file.resolver.client.class";
+  public static final String FEDERATION_FILE_RESOLVER_CLIENT_CLASS_DEFAULT =
+      "org.apache.hadoop.hdfs.server.federation.MockResolver";
+  public static final String FEDERATION_NAMENODE_RESOLVER_CLIENT_CLASS =
+      FEDERATION_ROUTER_PREFIX + "namenode.resolver.client.class";
+  public static final String FEDERATION_NAMENODE_RESOLVER_CLIENT_CLASS_DEFAULT =
+      "org.apache.hadoop.hdfs.server.federation.MockResolver";
+
   // dfs.client.retry confs are moved to HdfsClientConfigKeys.Retry 
   @Deprecated
   public static final String  DFS_CLIENT_RETRY_POLICY_ENABLED_KEY
