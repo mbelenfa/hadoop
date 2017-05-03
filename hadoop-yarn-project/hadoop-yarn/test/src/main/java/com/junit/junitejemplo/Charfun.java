@@ -1,32 +1,32 @@
 package com.junit.junitejemplo;
 
 public class Charfun {
-  //si en las dos primeras posiciones hay A se borra
+  //delete the char if in the first two positions are A
 	//ej: AACD==CD    ACD==CD    CDAR==CDAR
-	public String funcion1(String str) {
+	public String Delete2A(String str) {
 		if (str.length() <= 2)
 			return str.replaceAll("A", "");
 
-		String primero2char = str.substring(0, 2);
-		String stringmenos2Char = str.substring(2);
+		String first2char = str.substring(0, 2);
+		String string2Char = str.substring(2);
 
-		return primero2char.replaceAll("A", "") 
-				+ stringmenos2Char;
+		return first2char.replaceAll("A", "") 
+				+ string2Char;
 	}
-	//si las dos primeras posiciones son iguales a las dos ultimas posiciones retorna true
+	//the first two positions of the string are equal with the last two position
 	//ABCD == false   ABAB == true   
-	public boolean funcion2(String str) {
+	public boolean FirstTwoLastTwo(String str) {
 
 		if (str.length() <= 1)
 			return false;
 		if (str.length() == 2)
 			return true;
 
-		String primero2char = str.substring(0, 2);
+		String first2char = str.substring(0, 2);
 
-		String ultimo2char = str.substring(str.length() - 2);
+		String last2char = str.substring(str.length() - 2);
 
-		return primero2char.equals(ultimo2char);
+		return first2char.equals(last2char);
 	}
 
 }
