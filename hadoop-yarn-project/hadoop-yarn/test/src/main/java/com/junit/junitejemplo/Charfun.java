@@ -7,11 +7,11 @@ public class Charfun {
 		if (str.length() <= 2)
 			return str.replaceAll("A", "");
 
-		String first2Chars = str.substring(0, 2);
-		String stringMinusFirst2Chars = str.substring(2);
+		String primero2char = str.substring(0, 2);
+		String stringmenos2Char = str.substring(2);
 
-		return first2Chars.replaceAll("A", "") 
-				+ stringMinusFirst2Chars;
+		return primero2char.replaceAll("A", "") 
+				+ stringmenos2Char;
 	}
 	//si las dos primeras posiciones son iguales a las dos ultimas posiciones retorna true
 	//ABCD == false   ABAB == true   
