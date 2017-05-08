@@ -675,8 +675,9 @@ public class TestRMWebServices extends JerseyTestBase {
   }
    @Test
    public void test(){
-     boolean acep= true;
-  		assertTrue(acep);
+      string hello=sayPlain();
+     //boolean acep= true;
+  		assertTrue("Hello World",hello);
    }
   
   
