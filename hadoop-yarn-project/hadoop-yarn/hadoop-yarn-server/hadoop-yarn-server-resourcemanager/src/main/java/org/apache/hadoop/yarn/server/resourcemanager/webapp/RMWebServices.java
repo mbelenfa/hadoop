@@ -2614,4 +2614,11 @@ public class RMWebServices extends WebServices {
         app.getApplicationTimeouts().get(appTimeout.getTimeoutType()));
     return Response.status(Status.OK).entity(timeout).build();
   }
+ 
+  @Path("/Hello")
+  @GET
+	@Produces(MediaType.TEXT_PLAIN)
+	public String sayPlainTextHello() {
+		return "Hello World";
+	}
 }
