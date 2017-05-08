@@ -673,7 +673,13 @@ public class TestRMWebServices extends JerseyTestBase {
         null, null, null, null, null, null, null, emptySet, emptySet);
     assertTrue(appsInfo.getApps().isEmpty());
   }
-
+   @Test
+   public void test(){
+     boolean acep= true;
+  		assertTrue(acep);
+   }
+  
+  
   @Test
   public void testDumpingSchedulerLogs() throws Exception {
 
