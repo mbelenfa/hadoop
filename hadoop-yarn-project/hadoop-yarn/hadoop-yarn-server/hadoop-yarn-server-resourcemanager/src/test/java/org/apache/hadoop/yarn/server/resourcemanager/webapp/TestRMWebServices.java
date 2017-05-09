@@ -681,7 +681,7 @@ public class TestRMWebServices extends JerseyTestBase {
    @Test
 	 public void test0(){
       RMWebServices sayhello =new RMWebServices();
-	    String hello=sayhello.sayPlain();
+	    String hello=sayhello.sayPlainTextHello();
 	 		assertEquals("Hello World",hello );
 	  }
   
