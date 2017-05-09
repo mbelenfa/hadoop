@@ -675,10 +675,15 @@ public class TestRMWebServices extends JerseyTestBase {
   }
    @Test
    public void test(){
-      string hello=sayPlain();
-     //boolean acep= true;
-  		assertTrue("Hello World",hello);
+      boolean acep= true;
+  		assertTrue(acep);
    }
+   @Test
+	 public void test0(){
+      RMWebServices sayhello =new RMWebServices();
+	    String hello=sayhello.sayPlain();
+	 		assertEquals("Hello World",hello );
+	  }
   
   
   @Test
