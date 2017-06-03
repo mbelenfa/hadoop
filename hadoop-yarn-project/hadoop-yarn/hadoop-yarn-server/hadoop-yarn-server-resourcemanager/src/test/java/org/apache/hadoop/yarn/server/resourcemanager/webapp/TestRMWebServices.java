@@ -679,11 +679,19 @@ public class TestRMWebServices extends JerseyTestBase {
   		assertTrue(acep);
    }
    @Test
-	 public void test0(){
-      RMWebServices sayhello =new RMWebServices();
-	    String hello=sayhello.sayPlainTextHello();
-	 		assertEquals("Hello World",hello );
-	  }
+ 	 public void testhello() throws Exception{
+	WebResource r = resource();	
+	ClientResponse response = r.path("ws").path("v1").path("cluster")
+        .path("hello").accept(MediaType.APPLICATION_JSON)
+        .get(ClientResponse.class);
+    	ResourceManager mockRM = mock(ResourceManager.class);
+    Configuration conf = new YarnConfiguration();
+    HttpServletRequest mockHsr = mock(HttpServletRequest.class);
+    ApplicationACLsManager aclsManager = new ApplicationACLsManager(conf);
+    when(mockRM.getApplicationACLsManager()).thenReturn(aclsManager);
+    RMWebServices webSvc = new RMWebServices(mockRM, conf, mock(HttpServletResponse.class));
+ 	    assertEquals("Hello",webSvc.sayPlainTextHello());
+ 	  }
   
   
   @Test
