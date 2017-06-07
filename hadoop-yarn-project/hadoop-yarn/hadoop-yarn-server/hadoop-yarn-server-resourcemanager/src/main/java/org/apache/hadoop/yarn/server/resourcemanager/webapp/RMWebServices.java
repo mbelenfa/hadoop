@@ -310,7 +310,15 @@ public class RMWebServices extends WebServices {
     }
     return new SchedulerTypeInfo(sinfo);
   }
-
+  @POST
+  @Path("/scheduler")
+  @Produces({ MediaType.APPLICATION_JSON + "; " + JettyUtils.UTF_8,
+      MediaType.APPLICATION_XML + "; " + JettyUtils.UTF_8 })
+  public SchedulerTypeInfo postSchedulerInfo(SchedulerTypeInfo sinfo) throws IOException{
+    	init();
+    	return sinfo;
+	
+   }
   @POST
   @Path("/scheduler/logs")
   @Produces({ MediaType.APPLICATION_JSON + "; " + JettyUtils.UTF_8,
