@@ -65,8 +65,6 @@ import com.google.inject.servlet.ServletModule;
 import com.sun.jersey.api.json.JSONJAXBContext;
 import com.sun.jersey.api.json.JSONMarshaller;
 import com.sun.jersey.api.client.ClientResponse;
-import com.sun.jersey.api.json.JSONJAXBContext;
-import com.sun.jersey.api.json.JSONMarshaller;
 import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.guice.spi.container.servlet.GuiceContainer;
 import com.sun.jersey.test.framework.WebAppDescriptor;
@@ -76,13 +74,11 @@ public class TestRMWebServicesCapacitySched extends JerseyTestBase {
   protected static MockRM rm;
    protected static CapacitySchedulerConfiguration csConf;
   protected static YarnConfiguration conf;
- private static String userName;
- private static String notUserName;
-
-
+  private static String userName;
+  private static String notUserName;
 
   private static final int BAD_REQUEST_CODE = 400;
-	
+
   private class QueueInfo {
     float capacity;
     float usedCapacity;
@@ -635,13 +631,12 @@ public class TestRMWebServicesCapacitySched extends JerseyTestBase {
 	csinfo.CapacitySchedInfo("a3",0.5f,50,100.0f);
 	response =
         r.path("ws").path("v1").path("cluster")
-            .path("scheduler")//.queryParam("user.name", userName)
+            .path("scheduler").queryParam("user.name", userName)
             .accept(MediaType.APPLICATION_JSON)
             .entity(toJson(csinfo, SchedulerInfo.class), MediaType.APPLICATION_JSON)
             .post(ClientResponse.class);
 	
    }
-
   //funtion called from testPostCapacitySched()    
   @SuppressWarnings("rawtypess")
   private String toJson(Object nsli, Class klass) throws Exception {
@@ -654,6 +649,7 @@ public class TestRMWebServicesCapacitySched extends JerseyTestBase {
    //} catch (Exception e){
 	//throw e;
    // }
-
    }
+
+
 }
