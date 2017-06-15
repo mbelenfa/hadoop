@@ -311,7 +311,6 @@ public class RMWebServices extends WebServices {
     }
     return new SchedulerTypeInfo(sinfo);
   }
-
    // post for scheduler
   @POST
   @Path("/scheduler")
@@ -341,9 +340,8 @@ public class RMWebServices extends WebServices {
     }
 
     return Response.status(Status.OK).build();
-    }	
-	
-  
+    }
+
   @POST
   @Path("/scheduler/logs")
   @Produces({ MediaType.APPLICATION_JSON + "; " + JettyUtils.UTF_8,
