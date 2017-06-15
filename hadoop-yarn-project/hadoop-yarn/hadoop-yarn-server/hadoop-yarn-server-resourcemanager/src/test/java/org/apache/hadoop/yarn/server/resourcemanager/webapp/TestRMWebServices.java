@@ -674,7 +674,27 @@ public class TestRMWebServices extends JerseyTestBase {
         null, null, null, null, null, null, null, emptySet, emptySet);
     assertTrue(appsInfo.getApps().isEmpty());
   }
-
+   @Test
+   public void test(){
+      boolean acep= true;
+  		assertTrue(acep);
+   }
+   @Test
+ 	 public void testhello() throws Exception{
+	WebResource r = resource();	
+	ClientResponse response = r.path("ws").path("v1").path("cluster")
+        .path("hello").accept(MediaType.APPLICATION_JSON)
+        .get(ClientResponse.class);
+    	ResourceManager mockRM = mock(ResourceManager.class);
+    Configuration conf = new YarnConfiguration();
+    HttpServletRequest mockHsr = mock(HttpServletRequest.class);
+    ApplicationACLsManager aclsManager = new ApplicationACLsManager(conf);
+    when(mockRM.getApplicationACLsManager()).thenReturn(aclsManager);
+    RMWebServices webSvc = new RMWebServices(mockRM, conf, mock(HttpServletResponse.class));
+ 	    assertEquals("Hello",webSvc.sayPlainTextHello());
+ 	  }
+  
+  
   @Test
   public void testDumpingSchedulerLogs() throws Exception {
 
