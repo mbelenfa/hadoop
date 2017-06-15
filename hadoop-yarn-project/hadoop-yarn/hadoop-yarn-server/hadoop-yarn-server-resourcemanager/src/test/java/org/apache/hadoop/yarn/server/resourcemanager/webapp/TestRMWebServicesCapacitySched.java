@@ -21,22 +21,36 @@ package org.apache.hadoop.yarn.server.resourcemanager.webapp;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.fail;
 
 import java.io.StringReader;
+import java.io.IOException;
+import java.io.StringWriter;
+import java.util.ArrayList;
+import java.util.*;
+import java.lang.*;
 
 import javax.ws.rs.core.MediaType;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.http.JettyUtils;
 import org.apache.hadoop.yarn.api.records.Resource;
 import org.apache.hadoop.yarn.conf.YarnConfiguration;
 import org.apache.hadoop.yarn.server.resourcemanager.MockRM;
 import org.apache.hadoop.yarn.server.resourcemanager.ResourceManager;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.ResourceScheduler;
+import org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.CSQueue;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.CapacityScheduler;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.CapacitySchedulerConfiguration;
+import org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.CapacitySchedulerQueueManager;
+import org.apache.hadoop.yarn.server.resourcemanager.webapp.dao.CapacitySchedulerInfo;
+import org.apache.hadoop.yarn.server.resourcemanager.webapp.dao.CapacitySchedulerQueueInfoList;
+import org.apache.hadoop.yarn.server.resourcemanager.webapp.dao.CapacitySchedulerQueueInfo;
+import org.apache.hadoop.yarn.server.resourcemanager.webapp.dao.SchedulerInfo;
 import org.apache.hadoop.yarn.util.resource.Resources;
 import org.apache.hadoop.yarn.webapp.GenericExceptionHandler;
 import org.apache.hadoop.yarn.webapp.GuiceServletConfig;
@@ -56,6 +70,8 @@ import org.xml.sax.InputSource;
 
 import com.google.inject.Guice;
 import com.google.inject.servlet.ServletModule;
+import com.sun.jersey.api.json.JSONJAXBContext;
+import com.sun.jersey.api.json.JSONMarshaller;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.guice.spi.container.servlet.GuiceContainer;
@@ -63,9 +79,21 @@ import com.sun.jersey.test.framework.WebAppDescriptor;
 
 public class TestRMWebServicesCapacitySched extends JerseyTestBase {
 
+private static final Log LOG = 
+    LogFactory.getLog(TestRMWebServicesCapacitySched.class);
   protected static MockRM rm;
   protected static CapacitySchedulerConfiguration csConf;
   protected static YarnConfiguration conf;
+  private static String userName;
+  private static String notUserName;
+  static String A; 
+  static String B;
+  static String A1;
+  static String A2;
+  static String B1;
+  static String B2;
+  static String B3;  
+  private static final int BAD_REQUEST_CODE = 400;
 
   private class QueueInfo {
     float capacity;
@@ -77,7 +105,7 @@ public class TestRMWebServicesCapacitySched extends JerseyTestBase {
     int numApplications;
     String queueName;
     String state;
-  }
+   }
 
   private class LeafQueueInfo extends QueueInfo {
     int numActiveApplications;
@@ -97,7 +125,7 @@ public class TestRMWebServicesCapacitySched extends JerseyTestBase {
       bind(GenericExceptionHandler.class);
       csConf = new CapacitySchedulerConfiguration();
       setupQueueConfiguration(csConf);
-      conf = new YarnConfiguration(csConf);
+      conf = new YarnConfiguration(csConf);      
       conf.setClass(YarnConfiguration.RM_SCHEDULER, CapacityScheduler.class,
 		    ResourceScheduler.class);
       rm = new MockRM(conf);
@@ -118,16 +146,17 @@ public class TestRMWebServicesCapacitySched extends JerseyTestBase {
     config.setQueues(CapacitySchedulerConfiguration.ROOT,
         new String[] {"a", "b"});
 
-    final String A = CapacitySchedulerConfiguration.ROOT + ".a";
+    A = CapacitySchedulerConfiguration.ROOT + ".a";
     config.setCapacity(A, 10.5f);
     config.setMaximumCapacity(A, 50);
 
-    final String B = CapacitySchedulerConfiguration.ROOT + ".b";
+    B = CapacitySchedulerConfiguration.ROOT + ".b";
     config.setCapacity(B, 89.5f);
 
     // Define 2nd-level queues
-    final String A1 = A + ".a1";
-    final String A2 = A + ".a2";
+     A1 = A + ".a1";
+     A2 = A + ".a2";
+    
     config.setQueues(A, new String[] {"a1", "a2"});
     config.setCapacity(A1, 30);
     config.setMaximumCapacity(A1, 50);
@@ -136,9 +165,9 @@ public class TestRMWebServicesCapacitySched extends JerseyTestBase {
     config.setCapacity(A2, 70);
     config.setUserLimitFactor(A2, 100.0f);
 
-    final String B1 = B + ".b1";
-    final String B2 = B + ".b2";
-    final String B3 = B + ".b3";
+     B1 = B + ".b1";
+     B2 = B + ".b2";
+     B3 = B + ".b3";
     config.setQueues(B, new String[] {"b1", "b2", "b3"});
     config.setCapacity(B1, 60);
     config.setUserLimitFactor(B1, 100.0f);
@@ -608,5 +637,97 @@ public class TestRMWebServicesCapacitySched extends JerseyTestBase {
     // CapacitySchedulerPage and these RM WebServices + docs need to be updated
     // eg. ResourceInfo
     assertEquals("<memory:10, vCores:1>", res.toString());
+  }
+  @Test
+  public void testPostCapacitySched() throws Exception{
+    ClientResponse response;	
+    WebResource r = resource();
+    //add 2 level               
+    CapacitySchedulerConfiguration csConf1 = new CapacitySchedulerConfiguration();	
+    addCapacitySchedInfo(csConf,"a3",0.5f,50,100.0f);
+    response =
+        r.path("ws").path("v1").path("cluster")
+            .path("scheduler")
+            .accept(MediaType.APPLICATION_JSON)
+            .entity(toJson(csConf1, CapacitySchedulerConfiguration.class), MediaType.APPLICATION_JSON)
+            .post(ClientResponse.class);
+    // Verify
+    response =
+        r.path("ws").path("v1").path("cluster")
+            .path("scheduler").accept(MediaType.APPLICATION_JSON)
+            .get(ClientResponse.class);
+    assertEquals(MediaType.APPLICATION_JSON_TYPE + "; " + JettyUtils.UTF_8,
+        response.getType().toString());
+    csConf1 = response.getEntity(CapacitySchedulerConfiguration.class);
+
+    List<String> queueslist = new ArrayList<String>(Arrays.asList(csConf1.getQueues("root.a")));            
+    assertFalse(queueslist.isEmpty());                                                      
+    assertEquals(3,queueslist.size()); // [a1, a2, a3]
+    //add top level
+    csConf1 = new CapacitySchedulerConfiguration();	
+    addCapacitySchedInfo(csConf1,"c",0.5f,10,0.0f);
+    response =
+        r.path("ws").path("v1").path("cluster")
+            .path("scheduler")
+            .accept(MediaType.APPLICATION_JSON)
+            .entity(toJson(csConf1, CapacitySchedulerConfiguration.class), MediaType.APPLICATION_JSON)
+            .post(ClientResponse.class);
+    // Verify
+    response =
+        r.path("ws").path("v1").path("cluster")
+            .path("scheduler").accept(MediaType.APPLICATION_JSON)
+            .get(ClientResponse.class);
+    assertEquals(MediaType.APPLICATION_JSON_TYPE + "; " + JettyUtils.UTF_8,
+        response.getType().toString());
+    csConf1 = response.getEntity(CapacitySchedulerConfiguration.class);
+        
+    List<String> queueslist2 = new ArrayList<String>(Arrays.asList(csConf1.getQueues("root")));             
+    assertFalse(queueslist2.isEmpty());
+    assertEquals(3,queueslist2.size()); //queueslist2 = [a , b , c ]
+        
+   }
+
+  //funtion called from testPostCapacitySched()    
+  @SuppressWarnings("rawtypess")
+  private String toJson(Object nsli, Class klass) throws Exception {
+  
+    StringWriter sw = new StringWriter();
+    JSONJAXBContext ctx = new JSONJAXBContext(klass);
+    JSONMarshaller jm = ctx.createJSONMarshaller();
+    jm.marshallToJSON(nsli, sw);
+    return sw.toString();
+   
+  } 
+  private void addCapacitySchedInfo(CapacitySchedulerConfiguration csConf,String queuename,
+                                        float capacity, int MaximumCapacity,float UserLimitFactor) {		
+    ArrayList<Character> ql = new ArrayList<Character>(); 
+    for(int i=0; i<queuename.length() ; i++){  
+        ql.add(queuename.charAt(i));//add single char to the arraylist ex: "a3" --> [a , 3]
+    }
+    int n = ql.size(); //get number of characters in the array list
+    if(n==1){ //add new top level
+        csConf.setQueue(CapacitySchedulerConfiguration.ROOT, queuename);
+        String newq = CapacitySchedulerConfiguration.ROOT + "." + queuename;
+        csConf.setCapacity(newq, capacity);
+        csConf.setMaximumCapacity(newq, MaximumCapacity);           
+    }       
+    else if(ql.get(0).equals('a')){  //node a	 
+        if(n==2){//if add in 2 level in node a
+            String sta = A + "." + (queuename);
+            csConf.setQueue(A, queuename );
+            csConf.setCapacity(sta, capacity);
+            csConf.setMaximumCapacity(sta, MaximumCapacity);
+            csConf.setUserLimitFactor(sta, MaximumCapacity);
+         }        
+    }
+    else if(ql.get(0).equals('b')){
+        if(n==2){ 
+            String stb = B + "." + (queuename);
+            csConf.setQueue(B,queuename);
+            csConf.setCapacity(stb, capacity);
+            csConf.setMaximumCapacity(stb, MaximumCapacity);
+            csConf.setUserLimitFactor(stb, MaximumCapacity);
+         }        
+     }   
   }
 }

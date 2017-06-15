@@ -62,13 +62,21 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.lang.*;
 
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
+
+@XmlRootElement(name = "CapacitySchedulerConfiguration")
+@XmlAccessorType(XmlAccessType.FIELD)
 public class CapacitySchedulerConfiguration extends ReservationSchedulerConfiguration {
 
   private static final Log LOG = 
     LogFactory.getLog(CapacitySchedulerConfiguration.class);
 
-  private static final String CS_CONFIGURATION_FILE = "capacity-scheduler.xml";
+  private static final String CS_CONFIGURATION_FILE = "capacity-scheduler.xml"; 
   
   @Private
   public static final String PREFIX = "yarn.scheduler.capacity.";
@@ -128,8 +136,7 @@ public class CapacitySchedulerConfiguration extends ReservationSchedulerConfigur
 
   @Private
   public static final String MAXIMUM_ALLOCATION_VCORES =
-      "maximum-allocation-vcores";
-
+      "maximum-allocation-vcores";  
   /**
    * Ordering policy of queues
    */
@@ -308,6 +315,9 @@ public class CapacitySchedulerConfiguration extends ReservationSchedulerConfigur
     if (useLocalConfigurationProvider) {
       addResource(CS_CONFIGURATION_FILE);
     }
+  }
+  public void CapacitySchedulerConfiguration() {
+    // JAXB needs this
   }
 
   static String getQueuePrefix(String queue) {
@@ -736,6 +746,12 @@ public class CapacitySchedulerConfiguration extends ReservationSchedulerConfigur
     set(getQueuePrefix(queue) + QUEUES, StringUtils.arrayToString(subQueues));
     LOG.debug("CSConf - setQueues: qPrefix=" + getQueuePrefix(queue) + 
         ", queues=" + StringUtils.arrayToString(subQueues));
+  }
+  
+  public void setQueue(String queue, String subQueue) {
+    set(getQueuePrefix(queue) + QUEUES, StringUtils.arrayToString(getQueues(queue)) + "," + subQueue);
+    LOG.debug("CSConf - setQueues: qPrefix=" + getQueuePrefix(queue) + 
+        ", queues=" + StringUtils.arrayToString(getQueues(queue)) + "," + subQueue);
   }
   
   public Resource getMinimumAllocation() {

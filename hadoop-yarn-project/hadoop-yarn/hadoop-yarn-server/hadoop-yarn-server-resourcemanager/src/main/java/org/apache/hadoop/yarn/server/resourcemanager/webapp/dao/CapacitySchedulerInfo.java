@@ -26,6 +26,7 @@ import javax.xml.bind.annotation.XmlType;
 
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.CSQueue;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.CapacityScheduler;
+import org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.CapacitySchedulerConfiguration; 
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.LeafQueue;
 
 import java.util.ArrayList;
@@ -43,6 +44,7 @@ public class CapacitySchedulerInfo extends SchedulerInfo {
   protected CapacitySchedulerQueueInfoList queues;
   protected QueueCapacitiesInfo capacities;
   protected CapacitySchedulerHealthInfo health;
+  protected CapacitySchedulerConfiguration csconf;
 
   @XmlTransient
   static final float EPSILON = 1e-8f;
@@ -62,7 +64,7 @@ public class CapacitySchedulerInfo extends SchedulerInfo {
     capacities = new QueueCapacitiesInfo(parent.getQueueCapacities(), false);
     queues = getQueues(parent);
     health = new CapacitySchedulerHealthInfo(cs);
-  }
+   }
 
   public float getCapacity() {
     return this.capacity;
@@ -87,6 +89,7 @@ public class CapacitySchedulerInfo extends SchedulerInfo {
   public CapacitySchedulerQueueInfoList getQueues() {
     return this.queues;
   }
+
 
   protected CapacitySchedulerQueueInfoList getQueues(CSQueue parent) {
     CapacitySchedulerQueueInfoList queuesInfo =
